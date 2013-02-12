@@ -12,7 +12,7 @@
 
 set -e
 
-files=('Gemfile' 'Gemfile.lock' 'package.json')
+files=('Gemfile.lock' 'package.json')
 services=('redis' 'mongo' 'couch' 'postgres' 'mysql')
 
 for file in "${files[@]}"
