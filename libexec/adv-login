@@ -6,12 +6,9 @@
 
 set -e
 echo "
-Follow the instructions below to, potentially create,
-and login to your Adventure user account
+Follow the instructions below to potentially create
+and login to your Adventure account
 "
 
 read -p 'Email: ' email
-
-stty -echo;
-read -p 'Password: ' password; echo
-stty echo;
+read -s 'Password: ' password
