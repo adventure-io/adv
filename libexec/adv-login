@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Usage: adv login
+# Summary: Login or register an Adventure account
+# Help:
+#   adv login
+
+set -e
+echo "
+Follow the instructions below to, potentially create,
+and login to your Adventure user account
+"
+
+read -p 'Email: ' email
+
+stty -echo;
+read -p 'Password: ' password; echo
+stty echo;

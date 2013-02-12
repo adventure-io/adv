@@ -397,7 +397,10 @@ echo "#
 # ADV installed to ~/.adv -- Follow the instructions below to
 # load ADV in your shell.
 #
+# Try running `adv provision` when you're done!
+#
 # ==========================================================
 "
 
+$adv_src_path/adv/bin/adv login
 $adv_src_path/adv/bin/adv init

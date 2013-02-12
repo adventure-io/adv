@@ -1,0 +1,50 @@
+#!/usr/bin/env bash
+# Usage: adv scanfile <file>
+# Summary: Output services traced from file, if any
+# Help:
+# Output services traced from file, if any
+#
+#   adv scanfile <file>
+
+set -e
+
+supported_services=('redis')
+unsupported_services=('mongo' 'postgresql' 'mysql')
+
+file=$1
+contents=$(cat $file)
+
+provision_redis(){
+  echo "Provisioning redis!"
+
+  sleep 2
+
+  echo "
+=======================
+Add this Redis configuration information to your deployment!
+=======================
+Connection: redis://proto-redis.ad.venture.io:9161/
+Admin: http://proto-redis.ad.venture.io:9160/
+=======================
+"
+}
+
+for service in "${unsupported_services[@]}"
+do
+  if [[ $contents =~ $service ]]
+  then
+    echo "
+Looks like you're using $service. We're working hard, but not
+ready to provision that for you yet!
+"
+  fi
+done
+
+for service in "${supported_services[@]}"
+do
+  if [[ $contents =~ $service ]]
+  then
+    provision_$service
+  fi
+done
+
