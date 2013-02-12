@@ -99,7 +99,7 @@ Branches:
   Defaults:
 
     branch: master
-    repo:   adventure-io/adv
+    repo:   adventure-io
 
 "
 }
@@ -393,5 +393,11 @@ if (( adv_debug_flag == 1 ))
 then flags+=("--debug")
 fi
 
-# DEBUG!
-echo pwd
+echo "#
+# ADV installed to ~/.adv -- Follow the instructions below to
+# load ADV in your shell.
+#
+# ==========================================================
+"
+
+$adv_src_path/adv/bin/adv init
