@@ -11,4 +11,4 @@ and login to your Adventure account
 "
 
 read -p 'Email: ' email
-read -s 'Password: ' password
+read -s -p 'Password: ' password
