@@ -1,0 +1,397 @@
+#!/usr/bin/env bash
+
+##
+# This script allows for an automated install. It is shamelessly copied
+# from rvm with only minor modifications.
+#
+# Many many thanks to @wayneeseguin and @mpapis
+#
+# See: https://github.com/wayneeseguin/rvm/blob/0243881cdb4b9d162ed25a9d9a2bd9fd7a4233cf/binscripts/rvm-installer
+#
+
+##
+# Bail if we're not using the wright bash version
+#
+BASH_MIN_VERSION="3.2.25"
+if
+  [[ -n "${BASH_VERSION:-}" &&
+    "$(printf "%b" "${BASH_VERSION:-}\n${BASH_MIN_VERSION}\n" | LC_ALL=C sort -n -t"." | head -n1)" != "${BASH_MIN_VERSION}"
+  ]]
+then
+  echo "BASH ${BASH_MIN_VERSION} required (you have $BASH_VERSION)"
+  exit 1
+fi
+
+##
+# Variable Prep
+#
+export HOME PS4
+export adv_trace_flag adv_debug_flag adv_prefix adv_path
+
+##
+# Pattern matching setup
+#
+shopt -s extglob
+
+##
+# Error Handling
+#
+PS4="+ \${BASH_SOURCE##\${adv_path:-}} : \${FUNCNAME[0]:+\${FUNCNAME[0]}()}  \${LINENO} > "
+set -o errtrace
+set -o errexit
+
+##
+# Convenience Functions
+#
+log()  { printf "%b\n" "$*" ; return $? ;  }
+fail() { log "\nERROR: $*\n" ; exit 1 ; }
+
+##
+# Which `tar` command to use
+#
+if [[ -z "${adv_tar_command:-}" ]] && builtin command -v gtar >/dev/null
+then
+  adv_tar_command=gtar
+else
+  adv_tar_command=tar
+fi
+
+##
+# `tar` options
+#
+if [[ ! " ${adv_tar_options:-} " =~ " --no-same-owner "  ]] && \
+  $adv_tar_command --help 2>&1 | GREP_OPTIONS="" \grep -- --no-same-owner >/dev/null
+then
+  adv_tar_options="${adv_tar_options:-} --no-same-owner"
+  adv_tar_options="${adv_tar_options## }"
+fi
+
+##
+# Help Text
+#
+usage()
+{
+  printf "%b" "
+
+Usage
+
+  adv-installer [options] [action]
+
+Options
+
+  [[--]version] <latest|latest-x|latest-x.y|x.y.z> - Install ADV version
+  [--]branch    <name> - Install ADV head, from named branch
+  --trace              - used to debug the installer script
+
+Actions
+
+  master - Install ADV master branch from wayneeseguin adv repo (Default).
+  stable - Install ADV stable branch from wayneeseguin adv repo.
+  help   - Display CLI help (this output)
+
+Branches:
+
+  branch <branch>
+  branch /<branch>
+  branch <repo>/
+  branch <repo>/<branch>
+
+  Defaults:
+
+    branch: master
+    repo:   adventure-io/adv
+
+"
+}
+
+##
+# Searches for highest available version for the given pattern
+#  fetch_version 1.10. -> 1.10.3
+#  fetch_version 1. -> 1.11.0
+#  fetch_version "" -> 2.0.1
+#
+fetch_version()
+{
+  curl -s https://api.github.com/repos/adventure-io/adv/tags |
+    sed -n '/"name": / {s/^.*".*": "\(.*\)".*$/\1/; p;}' |
+    sort -t. -k 1,1n -k 2,2n -k 3,3n -k 4,4n -k 5,5n |
+    GREP_OPTIONS="" \grep "^${1:-}" | tail -n 1
+}
+
+##
+# Install a specific version
+#
+install_release()
+{
+  typeset _version
+  _version=$1
+  log "Downloading ADV version ${_version}"
+  get_and_unpack \
+    https://github.com/adventure-io/adv/tarball/${_version} \
+    adv-${_version}.tar.gz \
+    adventure-io-adv-
+}
+
+##
+# Install a specific version
+#
+install_head()
+{
+  typeset _repo _branch
+  case "$1" in
+    (/*)
+      _repo=adventure-io
+      _branch=${1#/}
+      ;;
+    (*/)
+      _repo=${1%/}
+      _branch=master
+      ;;
+    (*/*)
+      _repo=${1%%/*}
+      _branch=${1#*/}
+      ;;
+    (*)
+      _repo=adventure-io
+      _branch=$1
+      ;;
+  esac
+  log "Downloading ADV from ${_repo} branch ${_branch}"
+  get_and_unpack \
+    https://github.com/${_repo}/adv/tarball/${_branch} \
+    ${_repo}-adv-${_branch//\//_}.tgz \
+    ${_repo}-adv-
+}
+
+get_and_unpack()
+{
+  typeset _url _file _pattern
+  _url=$1
+  _file=$2
+  _pattern=$3
+
+  if curl -L ${_url} -o ${adv_archives_path}/${_file}
+  then
+    true
+  else
+    typeset ret=$?
+    case $ret in
+      (60)
+        log "
+Could not download '${_url}'.
+  Make sure your certificates are up to date as described above.
+  To continue in insecure mode run 'echo insecure >> ~/.curlrc'.
+"
+        return 60
+        ;;
+      (*)
+        log "
+Could not download '${_url}'.
+  curl returned status '$ret'.
+"
+        return 1
+        ;;
+    esac
+  fi
+
+  [[ -d "${adv_src_path}/adv" ]] || \mkdir -p "${adv_src_path}/adv"
+  if ! cd "${adv_src_path}/adv"
+  then
+    log "Could not change directory '${adv_src_path}/adv'."
+    return 2
+  fi
+
+  rm -rf ${adv_src_path}/adv/*
+  if ! $adv_tar_command xzf ${adv_archives_path}/${_file} ${adv_tar_options:-}
+  then
+    log "Could not extract ADV sources."
+    return 3
+  fi
+
+  if ! mv ${_pattern}*/* .
+  then
+    log "Could not move ADV sources path."
+    return 4
+  fi
+  rm -rf ${_pattern}*
+}
+
+# Tracing, if asked for.
+if [[ "$*" =~ --trace ]] || (( ${adv_trace_flag:-0} > 0 ))
+then
+  set -o xtrace
+  adv_trace_flag=1
+fi
+
+# Variable initialization, remove trailing slashes if they exist on HOME
+true \
+  ${adv_trace_flag:=0} ${adv_debug_flag:=0} \
+  HOME="${HOME%%+(\/)}"
+
+
+for advrc in /etc/advrc "$HOME/.advrc"
+do
+  if [[ -s "$advrc" ]]
+  then
+    if GREP_OPTIONS="" \grep '^\s*adv .*$' "$advrc" >/dev/null 2>&1
+    then
+      printf "%b" "
+Error: $advrc is for adv settings only.
+adv CLI may NOT be called from within $advrc.
+Skipping the loading of $advrc
+"
+      exit 1
+    else
+      source "$advrc"
+    fi
+  fi
+done
+
+adv_prefix="$HOME"
+adv_path="${adv_prefix}/.adv"
+
+if [[ -z "${adv_prefix}" ]]
+then
+  adv_prefix=$( dirname $adv_path )
+fi
+
+# Parse CLI arguments.
+while (( $# > 0 ))
+do
+  token="$1"
+  shift
+  case "$token" in
+
+    --trace)
+      set -o xtrace
+      adv_trace_flag=1
+      ;;
+
+    --path)
+      if [[ -n "${1:-}" ]]
+      then
+        adv_path="$1"
+        shift
+      else
+        fail "--path must be followed by a path."
+      fi
+      ;;
+
+    --branch|branch) # Install ADV from a given branch
+      if [[ -n "${1:-}" ]]
+      then
+        version="head"
+        branch="$1"
+        shift
+      else
+        fail "--branch must be followed by a branchname."
+      fi
+      ;;
+
+    --version|version)
+      version="$1"
+      shift
+      ;;
+
+    head)
+      version="head"
+      branch="master"
+      ;;
+
+    stable|master)
+      version="head"
+      branch="$token"
+      ;;
+
+    latest|latest-*|+([[:digit:]]).+([[:digit:]]).+([[:digit:]]))
+      version="$token"
+      ;;
+
+    help|usage)
+      usage
+      exit 0
+      ;;
+
+    *)
+      usage
+      exit 1
+      ;;
+
+  esac
+done
+
+case "$adv_path" in
+  *[[:space:]]*)
+    printf "%b" "
+It looks you are one of the happy *space* users(in home dir name),
+ADV is not yet fully ready for it, use this trick to fix it:
+
+    sudo ln -s \"$HOME/.adv/\" /$USER.adv
+    echo \"export adv_path=/$USER.adv\" >> \"$HOME/.advrc\"
+
+and start installing again.
+
+"
+    exit 2
+  ;;
+esac
+
+true "${version:=head}"
+
+if [[ "$adv_path" != /* ]]
+then
+  fail "The adv install path must be fully qualified. Tried $adv_path"
+fi
+
+adv_src_path="$adv_path/src"
+adv_archives_path="$adv_path/archives"
+
+for dir in "$adv_src_path" "$adv_archives_path"
+do
+  if [[ ! -d "$dir" ]]
+  then
+    mkdir -p "$dir"
+  fi
+done
+
+# Perform the actual installation, first we obtain the source using whichever
+# means was specified, if any. Defaults to head.
+case "${version}" in
+  (head)
+    echo "${branch}" > "$adv_path/RELEASE"
+    install_head ${branch:-master} || exit $?
+    ;;
+
+  (latest)
+    echo "${version}" > "$adv_path/RELEASE"
+    install_release $(fetch_version "") || exit $?
+    ;;
+
+  (latest-*)
+    echo "${version}" > "$adv_path/RELEASE"
+    install_release $(fetch_version "${version#latest-}") || exit $?
+    ;;
+
+  (+([[:digit:]]).+([[:digit:]]).+([[:digit:]])) # x.y.z
+    echo "version" > "$adv_path/RELEASE"
+    install_release ${version} || exit $?
+    ;;
+
+  (*)
+    fail "Something went wrong, unrecognized version '$version'"
+    ;;
+esac
+
+# required flag - path to install
+flags=( --path "$adv_path" )
+
+if (( adv_trace_flag == 1 ))
+then flags+=("--trace")
+fi
+
+if (( adv_debug_flag == 1 ))
+then flags+=("--debug")
+fi
+
+# DEBUG!
+echo pwd
