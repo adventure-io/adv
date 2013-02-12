@@ -393,13 +393,13 @@ if (( adv_debug_flag == 1 ))
 then flags+=("--debug")
 fi
 
-echo "#
+echo '#
 # ADV installed to ~/.adv -- Follow the instructions below to
 # load ADV in your shell.
 #
-# Try running `adv login` and `adv provision` when you're done!
+# Try running `adv login` and `adv provision` when you'\''re done!
 #
 # ==========================================================
-"
+'
 
 $adv_src_path/adv/bin/adv init
