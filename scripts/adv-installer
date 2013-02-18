@@ -10,7 +10,7 @@
 #
 
 ##
-# Bail if we're not using the wright bash version
+# Bail if we're not using the right bash version
 #
 BASH_MIN_VERSION="3.2.25"
 if
