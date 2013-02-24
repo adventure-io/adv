@@ -47,4 +47,3 @@ do
     provision_$service
   fi
 done
-

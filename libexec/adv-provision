@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
 # Usage: adv provision <env-name>
-# Summary: Provision resources based on $PWD
+#
+# Summary: Provision resources based on project in $PWD
+#
 # Help:
 # This (recursively) scans the current working directory
 #   and provisions the necessary resources.
@@ -12,14 +14,8 @@
 
 set -e
 
-files=('Gemfile.lock' 'package.json')
-services=('redis' 'mongo' 'couch' 'postgres' 'mysql')
+echo "
+Oops! We're not ready for you to try this feature yet.
 
-for file in "${files[@]}"
-do
-  path="./$file"
-  if [ -e $path ]
-  then
-    $_ADV_ROOT/bin/adv scanfile $path
-  fi
-done
+Please run 'adv try <service>' instead.
+"
