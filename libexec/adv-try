@@ -13,9 +13,7 @@
 #
 
 set -e
-
-source "$_ADV_ROOT/libexec/functions/common.bash"
-cache_run $0 $@
+set -u
 
 unset -f _run
 _run(){
@@ -34,4 +32,7 @@ _run(){
   fi
 }
 
-_run $@
+source "$_ADV_ROOT/libexec/functions/common.bash"
+cache_run $0 $@
+prepare_arguments $original_args
+_run $script_args

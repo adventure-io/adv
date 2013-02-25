@@ -12,6 +12,8 @@
 #   whether the user is authenticated
 #
 check_authenticated(){
+  true ${adv_authenticated:=0}
+
   if [ -z $adv_authenticated ]
   then
     load_user_data
@@ -37,9 +39,53 @@ check_authenticated(){
 #   api key for user account
 #
 login(){
-  echo "Enter your email to login..."
+  if [ ! -z ${ADV_USER_EMAIL:-""} ]
+  then
+    adv_user_email=$ADV_USER_EMAIL
+  else
+    adv_user_email=""
+  fi
+
+  while [ -z $adv_user_email ]
+  do
+    read_user_email
+    if [ -z $adv_user_email ]
+    then
+      echo "
+You must enter an email to login!
+"
+    fi
+  done
+
+  fetch_api_key $adv_user_email
+}
+
+# fetch_api_key
+#
+# Make a curl request with the users email to get an api key
+#
+# @exports
+#   adv_user_api_key
+#   api key for user account
+#
+fetch_api_key(){
+  fail
+  curl \
+    -L \
+    --post301 --post302 \
+    -F email="$1" \
+    "localhost:8080"
+}
+
+# read_user_email
+#
+# Allow the user to enter their email
+#
+# @exports
+#   adv_user_email
+#   email for user account
+#
+read_user_email(){
+  echo "Please enter your email to login..."
   read -p '> ' adv_user_email
-  echo "BLOWING UP NOW :)"
-  # fetch_api_key
-  return 1
 }

@@ -2,6 +2,14 @@
 # Common Functions
 #
 
+# fail
+#
+# Functiont that returns a bad status by default
+#
+fail(){
+  return 42
+}
+
 # load_functions
 #
 # Load function files for each argument passed
@@ -61,6 +69,70 @@ cache_run(){
   original_script=$1
   shift
   original_args=$@
+}
+
+# prepare_arguments
+#
+# Look for and remove debug flag in script args
+#
+# @exports
+#   script_args
+#   The usable command line arguments passed to the script
+#
+# @exports
+#   adv_debug_flag
+#   Equals one if --debug was passed on the command line
+#
+# @exports
+#   adv_trace_flag
+#   Equals one if --trace was passed on the command line
+#
+prepare_arguments(){
+  script_args=("")
+
+  true ${adv_trace_flag:=0} ${adv_debug_flag:=0}
+
+  for arg
+  do
+    case $arg in
+      --debug)
+        adv_debug_flag=1
+        start_debug
+        ;;
+      --trace)
+        adv_trace_flag=1
+        start_trace
+        ;;
+      *)
+        script_args=("${script_args[@]}" "$arg")
+        ;;
+    esac
+  done
+}
+
+# start_debug
+#
+# If the debug flag is set, set appropriate bash script options
+#
+start_debug(){
+  if [[ $adv_debug_flag == 1 ]]
+  then
+    set -o nounset
+    shopt -s extdebug
+  fi
+}
+
+# start_trace
+#
+# If the trace flag is set, set appropriate bash script options
+#
+start_trace(){
+  if [[ $adv_trace_flag == 1 ]]
+  then
+    set -o xtrace
+    set -o errtrace
+    set -o functrace
+  fi
 }
 
 # rerun
