@@ -12,16 +12,19 @@
 #   whether the user is authenticated
 #
 check_authenticated(){
-  true ${adv_authenticated:=0}
+  true \
+    ${adv_authenticated:=""} \
+    ${adv_user_email:=""} \
+    ${adv_user_api_key:=""}
 
   if [ -z $adv_authenticated ]
   then
     load_user_data
-    if [[ -z "$adv_user_email" || -z "$adv_user_api_key" ]]
+    if [[ ! -z "$adv_user_email" && ! -z "$adv_user_api_key" ]]
     then
-      adv_authenticated=false
-    else
       adv_authenticated=true
+    else
+      adv_authenticated=false
     fi
   fi
 }
@@ -57,7 +60,19 @@ You must enter an email to login!
     fi
   done
 
-  fetch_api_key $adv_user_email
+  adv_user_api_key="$(fetch_api_key $adv_user_email)"
+  write_creds_to_advrc
+}
+
+# write_creds_to_advrc
+#
+# Write new user email and api key to ~/.advrc
+#
+write_creds_to_advrc(){
+  echo "
+adv_user_email="$adv_user_email"
+adv_user_api_key="$adv_user_api_key"
+" | tee -a ~/.advrc > /dev/null 2>&1
 }
 
 # fetch_api_key
@@ -69,12 +84,22 @@ You must enter an email to login!
 #   api key for user account
 #
 fetch_api_key(){
-  fail
-  curl \
-    -L \
-    --post301 --post302 \
-    -F email="$1" \
-    "localhost:8080"
+  prepare_adv_host
+
+  local ret="$(
+    safe_curl \
+      -s -f -L --post301 --post302 \
+      -F "user[email]"="$1" \
+      "$adv_host/users"
+    )"
+
+  true ${_last_curl_status:=0}
+  if [[ $_last_curl_status > 0 ]]
+  then
+    fail "Unable to fetch an API key for you at this time!"
+  else
+    echo "$ret"
+  fi
 }
 
 # read_user_email

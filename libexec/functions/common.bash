@@ -7,6 +7,11 @@
 # Functiont that returns a bad status by default
 #
 fail(){
+  if [[ ! -z $@ ]]
+  then
+    echo "$@"
+  fi
+
   return 42
 }
 
@@ -47,7 +52,7 @@ load_user_data(){
 #
 load_user_data_from(){
   local path="$1"
-  if [ -e "$path" ]
+  if [[ -s "$path" ]]
   then
     source "$path"
   fi
@@ -152,10 +157,39 @@ rerun(){
 #   array of paths
 #
 user_data_paths(){
-  adv_user_data_paths=("/etc/advrc" "~/.advrc" "$PWD/.advrc")
+  adv_user_data_paths=("/etc/advrc" "$HOME/.advrc" "$PWD/.advrc")
+  true ${ADV_ADVRC:=""}
 
   if [[ ! -z $ADV_ADVRC ]]
   then
     adv_user_data_paths=("${adv_user_data_paths[@]}" "$ADV_ADVRC")
   fi
+}
+
+# prepare_adv_host
+#
+# Setup adv_host server hostname for api calls
+#
+# @exports
+#   adv_host
+#   hostname for api calls
+#
+prepare_adv_host(){
+  adv_host=${adv_host:-${ADV_HOST:-"http://0.0.0.0:3000"}}
+}
+
+# safe_curl
+#
+# Turn off error checking temporarily
+#
+# @exports
+#   _last_curl_status
+#   The status code that the curl command returned
+#
+safe_curl(){
+  local args=$@
+  set +e
+  curl $@
+  _last_curl_status="$?"
+  set -e
 }

@@ -7,10 +7,20 @@
 # Try and provision a service for each argument passed
 #
 provision_services(){
+  echo "
+==========================================
+Provisioning...
+==========================================
+"
+
   for service
   do
     provision_service $service
   done
+
+  echo "
+==========================================
+"
 }
 
 # provision_service
@@ -34,7 +44,24 @@ provision_service(){
 # Provision a redis instance
 #
 provision_redis(){
-  echo "provisioning redis"
+  prepare_adv_host
+
+  local ret="$(
+    safe_curl \
+      -s -f -L --post301 --post302 \
+      -F "user[email]"="$adv_user_email" \
+      -F "user[api_key]"="$adv_user_api_key" \
+      -F "service_slug"="redis" \
+      "$adv_host/instances"
+    )"
+
+  true ${_last_curl_status:=0}
+  if [[ $_last_curl_status > 0 ]]
+  then
+    fail "Unable to create a Redis instance at this time!"
+  else
+    echo "$ret"
+  fi
 }
 
 # provision_unknown
@@ -42,5 +69,5 @@ provision_redis(){
 # We don't know how to provision a service named like the argument
 #
 provision_unknown(){
-  echo "don't know how to provision $1"
+  echo "We're not able to provision $1 for you quite yet."
 }
