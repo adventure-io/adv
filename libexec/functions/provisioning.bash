@@ -46,22 +46,26 @@ provision_service(){
 provision_redis(){
   prepare_adv_host
 
-  local ret="$(
-    safe_curl \
-      -s -f -L --post301 --post302 \
-      -F "user[email]"="$adv_user_email" \
-      -F "user[api_key]"="$adv_user_api_key" \
-      -F "service_slug"="redis" \
-      "$adv_host/instances"
-    )"
+  set +e
 
-  true ${_last_curl_status:=0}
-  if [[ $_last_curl_status > 0 ]]
+  local ret
+  ret=$(
+      curl \
+        -s -L --post301 --post302 \
+        -F "user[email]"="$adv_user_email" \
+        -F "user[api_key]"="$adv_user_api_key" \
+        -F "service_slug"="redis" \
+        "$adv_host/instances" 2>&1
+    )
+
+  if [[ $? > 0 ]]
   then
-    fail "Unable to create a Redis instance at this time!"
+    fail "REDIS: Unable to create an instance at this time!"
   else
-    echo "$ret"
+    echo "REDIS: $ret"
   fi
+
+  set -e
 }
 
 # provision_unknown

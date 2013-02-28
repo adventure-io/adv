@@ -86,20 +86,24 @@ adv_user_api_key="$adv_user_api_key"
 fetch_api_key(){
   prepare_adv_host
 
-  local ret="$(
-    safe_curl \
-      -s -f -L --post301 --post302 \
-      -F "user[email]"="$1" \
-      "$adv_host/users"
+  set +e
+
+  local ret
+  ret="$(
+      curl \
+        -s -L --post301 --post302 \
+        -F "user[email]"="$1" \
+        "$adv_host/users"
     )"
 
-  true ${_last_curl_status:=0}
-  if [[ $_last_curl_status > 0 ]]
+  if [[ $? > 0 ]]
   then
     fail "Unable to fetch an API key for you at this time!"
   else
     echo "$ret"
   fi
+
+  set -e
 }
 
 # read_user_email

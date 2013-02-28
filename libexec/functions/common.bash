@@ -177,19 +177,3 @@ user_data_paths(){
 prepare_adv_host(){
   adv_host=${adv_host:-${ADV_HOST:-"http://0.0.0.0:3000"}}
 }
-
-# safe_curl
-#
-# Turn off error checking temporarily
-#
-# @exports
-#   _last_curl_status
-#   The status code that the curl command returned
-#
-safe_curl(){
-  local args=$@
-  set +e
-  curl $@
-  _last_curl_status="$?"
-  set -e
-}
