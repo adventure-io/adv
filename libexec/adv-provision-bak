@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+# Usage: adv provision <env-name>
+#
+# Summary: Provision resources based on project in $PWD
+#
+# Help:
+# This (recursively) scans the current working directory
+#   and provisions the necessary resources.
+#
+# An optional environment name can be provided for grouping.
+#
+#   adv provision
+#   adv provision <env-name>
+
+set -e
+
+echo "
+Oops! We're not ready for you to try this feature yet.
+
+Please run 'adv try <service>' instead.
+"

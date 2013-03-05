@@ -1,21 +1,37 @@
 #!/usr/bin/env bash
-# Usage: adv provision <env-name>
+# Usage: adv try [<service1> <service2> ...]
 #
-# Summary: Provision resources based on project in $PWD
+# Summary: Try out Adventure by provisioning a Redis instance
 #
 # Help:
-# This (recursively) scans the current working directory
-#   and provisions the necessary resources.
+#   Try out Adventure by provisioning some standalone instances. When called
+#   with no arguments, it defaults to Redis.
 #
-# An optional environment name can be provided for grouping.
+#   adv try
+#   adv try <service>
+#   adv try <service1> <service2> ...
 #
-#   adv provision
-#   adv provision <env-name>
 
 set -e
 
-echo "
-Oops! We're not ready for you to try this feature yet.
+unset -f _run
+_run(){
+  load_functions authentication provisioning
 
-Please run 'adv try <service>' instead.
-"
+  check_authenticated
+
+  if [[ $adv_authenticated == true ]]
+  then
+    local default_services=('redis')
+    local services=${@:-$default_services}
+    provision_services $services
+  else
+    login
+    rerun
+  fi
+}
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+cache_run $0 $@
+prepare_arguments $original_args
+_run ${script_args[@]}
