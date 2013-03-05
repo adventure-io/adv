@@ -54,7 +54,7 @@ provision_redis(){
         -s -L --post301 --post302 \
         -F "user[email]"="$adv_user_email" \
         -F "user[api_key]"="$adv_user_api_key" \
-        -F "service_slug"="redis" \
+        -F "instance[service_slug]"="redis" \
         "$adv_host/instances" 2>&1
     )
 
