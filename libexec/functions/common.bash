@@ -175,5 +175,5 @@ user_data_paths(){
 #   hostname for api calls
 #
 prepare_adv_host(){
-  adv_host=${adv_host:-${ADV_HOST:-"http://0.0.0.0:3000"}}
+  adv_host=${adv_host:-${ADV_HOST:-"http://alpha.api.ad.venture.io"}}
 }
