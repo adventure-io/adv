@@ -1,0 +1,12 @@
+#!/usr/bin/env bash
+# Usage: adv update
+#
+# Summary: Update the ADV CLI
+#
+# Help:
+#   Update the ADV CLI
+#
+#   adv update
+#
+
+\curl -L http://get.adv.io | bash -s - --quiet
