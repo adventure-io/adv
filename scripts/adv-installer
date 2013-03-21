@@ -26,7 +26,7 @@ fi
 # Variable Prep
 #
 export HOME PS4
-export adv_trace_flag adv_debug_flag adv_prefix adv_path
+export adv_trace_flag adv_debug_flag adv_prefix adv_path adv_quiet_flag
 
 ##
 # Pattern matching setup
@@ -43,7 +43,14 @@ set -o errexit
 ##
 # Convenience Functions
 #
-log()  { printf "%b\n" "$*" ; return $? ;  }
+log(){
+  if [[ ! $adv_quiet_flag > 0 ]]
+  then
+    printf "%b\n" "$*" ; return $? ;
+  fi
+  return 0;
+}
+
 fail() { log "\nERROR: $*\n" ; exit 1 ; }
 
 ##
@@ -82,6 +89,7 @@ Options
   [[--]version] <latest|latest-x|latest-x.y|x.y.z> - Install ADV version
   [--]branch    <name> - Install ADV head, from named branch
   --trace              - used to debug the installer script
+  --quiet              - used to silence the installer script
 
 Actions
 
@@ -170,7 +178,7 @@ get_and_unpack()
   _file=$2
   _pattern=$3
 
-  if curl -L ${_url} -o ${adv_archives_path}/${_file}
+  if curl -s -L ${_url} -o ${adv_archives_path}/${_file}
   then
     true
   else
@@ -226,7 +234,7 @@ fi
 # Variable initialization, remove trailing slashes if they exist on HOME
 true \
   ${adv_trace_flag:=0} ${adv_debug_flag:=0} \
-  HOME="${HOME%%+(\/)}"
+  ${adv_quiet_flag:=0} HOME="${HOME%%+(\/)}"
 
 
 for advrc in /etc/advrc "$HOME/.advrc"
@@ -261,6 +269,10 @@ do
   token="$1"
   shift
   case "$token" in
+
+    --quiet)
+      adv_quiet_flag=1
+      ;;
 
     --trace)
       set -o xtrace
@@ -393,7 +405,11 @@ if (( adv_debug_flag == 1 ))
 then flags+=("--debug")
 fi
 
-echo '#
+if (( adv_quiet_flag == 1 ))
+then flags+=("--quiet")
+fi
+
+log '#
 # ADV installed to ~/.adv -- Follow the instructions below to
 # load ADV in your shell.
 #
@@ -402,4 +418,4 @@ echo '#
 # ==========================================================
 '
 
-$adv_src_path/adv/bin/adv init
+$adv_src_path/adv/bin/adv init "${flags[@]}"

@@ -1,14 +1,38 @@
 #!/usr/bin/env bash
 set -e
 
-print=""
-if [ "$1" = "-" ]; then
-  print=1
-  shift
-fi
+log(){
+  if [[ ! $adv_quiet_flag > 0 ]]
+  then
+    printf "%b\n" "$*" ; return $? ;
+  fi
+  return 0;
+}
 
-shell="$1"
-if [ -z "$shell" ]; then
+print=""
+shell=""
+
+export adv_quiet_flag
+true ${adv_quiet_flag:=0}
+while (( $# > 0 ))
+do
+  token="$1"
+  shift
+  case "$token" in
+    '--quiet')
+      adv_quiet_flag=1
+      ;;
+    '-')
+      print=1
+      ;;
+    *)
+      shell="$token"
+      ;;
+  esac
+done
+
+if [ -z $shell ]
+then
   shell="$(basename "$SHELL")"
 fi
 
@@ -45,11 +69,11 @@ if [ -z "$print" ]; then
     ;;
   esac
 
-  { echo "# Load adv automatically by adding"
-    echo "# the following to ${profile}:"
-    echo
-    echo "eval \"\$(${_ADV_ROOT}/bin/adv init -)\""
-    echo
+  { log "# Load adv automatically by adding"
+    log "# the following to ${profile}:"
+    log
+    log "eval \"\$(${_ADV_ROOT}/bin/adv init -)\""
+    log
   } >&2
 
   exit 1
