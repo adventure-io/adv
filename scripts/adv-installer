@@ -133,7 +133,7 @@ install_release()
 {
   typeset _version
   _version=$1
-  log "Downloading ADV version ${_version}"
+  # log "Downloading ADV version ${_version}"
   get_and_unpack \
     https://github.com/adventure-io/adv/tarball/${_version} \
     adv-${_version}.tar.gz \
