@@ -9,4 +9,4 @@
 #   adv update
 #
 
-\curl -L http://get.adv.io | bash -s - --quiet
+\curl -sL get.adv.io | bash -s - --quiet
