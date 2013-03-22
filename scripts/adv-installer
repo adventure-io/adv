@@ -164,7 +164,7 @@ install_head()
       _branch=$1
       ;;
   esac
-  log "Downloading ADV from ${_repo} branch ${_branch}"
+  # log "Downloading ADV from ${_repo} branch ${_branch}"
   get_and_unpack \
     https://github.com/${_repo}/adv/tarball/${_branch} \
     ${_repo}-adv-${_branch//\//_}.tgz \
