@@ -3,5 +3,5 @@
 ## Installation
 
 ```
-\curl -L https://raw.github.com/adventure-io/adv/master/scripts/adv-installer | bash
+\curl -L http://get.adv.io | bash -s
 ```
