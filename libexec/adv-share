@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+# Usage: adv share [<email1> <email2> ...]
+#
+# Summary: Share Adventure with friends and colleagues
+#
+# Help:
+#   Share Adventure with friends and colleagues by providing their email address
+#
+#   adv share <email1> ...
+#   adv share <email1> <email2> ...
+#
+
+set -e
+
+unset -f _run
+_run(){
+  load_functions authentication sharing
+
+  check_authenticated
+
+  if [[ $adv_authenticated == true ]]
+  then
+    local emails="$@"
+    if [[ ! -z $emails ]]
+    then
+      share_with $emails
+    else
+      exec "$_ADV_ROOT/libexec/adv-help" share
+    fi
+  else
+    login
+    rerun
+  fi
+}
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+cache_run $0 $@
+prepare_arguments $original_args
+_run ${script_args[@]}
