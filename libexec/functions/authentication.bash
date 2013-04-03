@@ -116,5 +116,6 @@ fetch_api_key(){
 #
 read_user_email(){
   echo "Please enter your email to login..."
+  echo "(We'll send notifications and updates to this address)"
   read -p '> ' adv_user_email
 }
