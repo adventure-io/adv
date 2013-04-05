@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Usage: adv info
+#
+# Summary: Show configuration info
+#
+# Help:
+#   Show configuration info
+#
+#   adv info
+#
+
+set -e
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+prepare_adv_version
+
+echo "adv v$adv_version"

@@ -2,6 +2,18 @@
 # Common Functions
 #
 
+# prepare_adv_version
+#
+# Set a variable containing the adv version
+#
+# @exports
+#   adv_version
+#   The version of the current adv script
+#
+prepare_adv_version(){
+  adv_version=${adv_version:-${ADV_VERSION:-"0.1.1"}}
+}
+
 # fail
 #
 # Functiont that returns a bad status by default

@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+# Usage: adv info
+#
+# Summary: Show configuration info
+#
+# Help:
+#   Show configuration info
+#
+#   adv info
+#
+
+set -e
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+load_user_data
+prepare_adv_host
+prepare_adv_version
+
+echo "
+adv -- The CLI for http://ad.venture.io/
+
+Version: $adv_version
+Server: $adv_host
+User: $adv_user_email
+API Key: $adv_user_api_key
+"
