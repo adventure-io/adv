@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+# Usage: adv list
+#
+# Summary: List your instances
+#
+# Help:
+#   See a list of your instances and data about their state and
+#   how to connect with them
+#
+#   adv list
+#   adv ls
+#
+
+set -e
+
+unset -f _run
+_run(){
+  load_functions authentication listing
+
+  check_authenticated
+
+  if [[ $adv_authenticated == true ]]
+  then
+    list_instances
+  else
+    login
+    rerun
+  fi
+}
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+cache_run $0 $@
+prepare_arguments $original_args
+_run ${script_args[@]}
