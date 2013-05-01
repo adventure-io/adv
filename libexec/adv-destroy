@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Usage: adv destroy [<instance_id_1> <instance_id_2> ...]
+#
+# Summary: Given a list of instance ids, destroy them
+#
+# Help:
+#   When you're done using an Adventure instance, you should destroy it.
+#   Simply pass this command a list of instance ids and it will destroy the
+#   associated instance.
+#
+#   adv destroy <instance_id_1>
+#   adv destroy <instance_id_1> <instance_id_2> ...
+#
+
+set -e
+
+unset -f _run
+_run(){
+  load_functions authentication instances/destroying
+
+  check_authenticated
+
+  if [[ $adv_authenticated == true ]]
+  then
+    destroy_instances $@
+  else
+    login
+    rerun
+  fi
+}
+
+source "$_ADV_ROOT/libexec/functions/common.bash"
+cache_run $0 $@
+prepare_arguments $original_args
+_run ${script_args[@]}

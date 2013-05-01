@@ -16,7 +16,7 @@ set -e
 
 unset -f _run
 _run(){
-  load_functions authentication provisioning
+  load_functions authentication instances/provisioning
 
   check_authenticated
 
