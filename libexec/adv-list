@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
-# Usage: adv list
+# Usage: adv list <state>
 #
 # Summary: List your instances
 #
 # Help:
 #   See a list of your instances and data about their state and
-#   how to connect with them
+#   how to connect with them. Shows active instances by default if
+#   no state is passed in. Permitted states are: active*, inactive*, initialized, provisioning,
+#   running, pending_expiration, failed, and expired.
+#
+#   * These are meta-states encompassing a subset of the remaining options
+#   * active = initialized, provisioning, running, pending_expiration
+#   * inactive = failed, expired
 #
 #   adv list
 #   adv ls
+#   adv ls running
+#   adv ls expired
 #
 
 set -e
