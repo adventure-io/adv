@@ -21,7 +21,9 @@ _run(){
 
   if [[ $adv_authenticated == true ]]
   then
-    list_instances
+    local default_state=('active')
+    local state=${1:-$default_state}
+    list_instances $state
   else
     login
     rerun
